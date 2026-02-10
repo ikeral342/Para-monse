@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para Monse 💌</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- 1. VARIABLES Y CONFIGURACIÓN --- */
+        :root {
+            --primary: #ff4d6d;
+            --secondary: #ff8fa3;
+            --accent: #c9184a;
+            --paper: #fff5f5;
+            --text: #590d22;
+            --green-leaf: #386641;
+            --green-stem: #6a994e;
+            --gold: #ffb703;
+            --shadow-soft: 0 15px 35px rgba(0,0,0,0.2);
+            --shadow-hard: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Fondo mágico con gradiente profundo */
+            background: radial-gradient(circle at 50% 100%, #ffc8dd, #ff8fa3, #590d22);
+            font-family: 'Nunito', sans-serif;
+            perspective: 1500px;
+        }
+
+        /* --- 2. FONDO MÁGICO (LUCES BOKEH) --- */
+        .bokeh {
+            position: absolute;
+            width: 100%; height: 100%;
+            top: 0; left: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .light {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            filter: blur(10px);
+            animation: float-up linear infinite;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+            50% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+
+        /* --- 3. JARDÍN DE TULIPANES MEJORADO --- */
+        .garden {
+            position: absolute;
+            bottom: -20px;
+            width: 100%;
+            height: 150px;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            z-index: 50; /* Delante del sobre al principio */
+            pointer-events: none;
+        }
+
+        .tulip-container {
+            width: 80px;
+            height: 120px;
+            transform-origin: bottom center;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+            animation: sway 4s ease-in-out infinite alternate;
+        }
+
+        /* Variaciones de movimiento para que no sea robótico */
+        .tulip-container:nth-child(odd) { animation-duration: 5s; animation-delay: 0.5s; }
+        .tulip-container:nth-child(even) { animation-duration: 3.5s; animation-delay: -1s; }
+
+        @keyframes sway {
+            0% { transform: rotate(-3deg); }
+            100% { transform: rotate(3deg); }
+        }
+
+        /* --- 4. EL SOBRE (ULTIMATE) --- */
+        .envelope-wrapper {
+            position: relative;
+            width: 340px;
+            height: 240px;
+            cursor: pointer;
+            z-index: 100;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .envelope-wrapper:hover {
+            transform: scale(1.03) translateY(-10px);
+        }
+        
+        .envelope-wrapper.open {
+            cursor: default;
+            transform: translateY(120px); /* Baja el sobre para que la carta suba */
+        }
+
+        /* Parte trasera del sobre */
+        .envelope-back {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            border-radius: 10px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* Textura de papel */
+        .texture {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.4;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E");
+            border-radius: 10px;
+            z-index: 1;
+        }
+
+        /* --- LA CARTA (INTERIOR) --- */
+        .card {
+            position: absolute;
+            top: 10px; left: 20px; right: 20px; bottom: 10px; /* Un poco más pequeña que el sobre */
+            background: var(--paper);
+            border-radius: 8px;
+            z-index: 5; /* Dentro del sobre */
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+            /* Patrón sutil de fondo en la carta */
+            background-image: radial-gradient(#ffccd5 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Contenido de la carta */
+        .card-content {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease 0.6s;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card h1 {
+            font-family: 'Great Vibes', cursive;
+            color: var(--accent);
+            font-size: 2.2rem;
+            margin: 0;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+        }
+
+        .card p {
+            font-size: 1rem;
+            color: var(--text);
+            line-height: 1.4;
+            margin: 5px 0;
+        }
+
+        .highlight { background: linear-gradient(120deg, #ffc8dd 0%, #ffc8dd 100%); background-repeat: no-repeat; background-size: 100% 40%; background-position: 0 90%; font-weight: bold; }
+
+        /* --- BOTONES --- */
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .btn {
+            border: none;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            z-index: 100; /* Asegurar que se puedan clicar */
+        }
+
+        .btn-yes {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4);
+        }
+        
+        .btn-no {
+            background: #e9ecef;
+            color: #6c757d;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .btn:active { transform: scale(0.95); }
+
+        /* --- LAS SOLAPAS DEL SOBRE --- */
+        .flap {
+            position: absolute;
+            width: 0; height: 0;
+            z-index: 10;
+        }
+
+        .flap-left {
+            border-left: 170px solid var(--accent);
+            border-top: 120px solid transparent;
+            border-bottom: 120px solid transparent;
+            top: 0; left: 0;
+        }
+        
+        .flap-right {
+            border-right: 170px solid var(--accent);
+            border-top: 120px solid transparent;
+            border-bottom: 120px solid transparent;
+            top: 0; right: 0;
+            filter: brightness(0.95);
+        }
+
+        .flap-bottom {
+            border-bottom: 130px solid var(--primary);
+            border-left: 170px solid transparent;
+            border-right: 170px solid transparent;
+            bottom: 0; left: 0;
+            z-index: 11;
+            filter: drop-shadow(0 -2px 5px rgba(0,0,0,0.1));
+        }
+
+        .flap-top {
+            top: 0; left: 0;
+            border-top: 140px solid var(--secondary);
+            border-left: 170px solid transparent;
+            border-right: 170px solid transparent;
+            transform-origin: top;
+            transition: transform 0.6s ease-in-out, z-index 0s linear 0.6s;
+            z-index: 12;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));
+        }
+
+        /* --- SELLO DE CERA (WAX SEAL) --- */
+        .wax-seal {
+            position: absolute;
+            top: -55px; left: -25px; /* Centrado en el triángulo superior */
+            width: 50px; height: 50px;
+            background: radial-gradient(circle at 30% 30%, #d00000, #9d0208);
+            border-radius: 50%;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.3), inset 0 0 10px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255,255,255,0.2);
+            font-size: 24px;
+            border: 4px dashed rgba(0,0,0,0.1); /* Efecto borde irregular */
+            transition: opacity 0.4s;
+        }
+
+        /* --- ESTADO: ABIERTO --- */
+        .open .flap-top {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .open .wax-seal { opacity: 0; }
+
+        .open .card {
+            transform: translateY(-250px) scale(1.1); /* Sube mucho más y se hace grande */
+            height: 420px; /* Se hace más alta */
+            z-index: 200; /* Encima de todo */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .open .card-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- PANTALLA FINAL --- */
+        .final-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s;
+        }
+
+        .final-overlay.visible { opacity: 1; pointer-events: auto; }
+        
+        .final-msg { 
+            font-family: 'Great Vibes', cursive; 
+            font-size: 4rem; 
+            color: var(--accent); 
+            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="bokeh" id="bokeh-container"></div>
+
+    <div class="garden">
+        <div class="tulip-container"><svg viewBox="0 0 100 150" class="tulip-svg"><use href="#tulip-shape" fill="url(#grad1)"/></svg></div>
+        <div class="tulip-container"><svg viewBox="0 0 100 150" class="tulip-svg"><use href="#tulip-shape" fill="url(#grad2)"/></svg></div>
+        <div class="tulip-container"><svg viewBox="0 0 100 150" class="tulip-svg"><use href="#tulip-shape" fill="url(#grad3)"/></svg></div>
+        <div class="tulip-container"><svg viewBox="0 0 100 150" class="tulip-svg"><use href="#tulip-shape" fill="url(#grad1)"/></svg></div>
+        <div class="tulip-container"><svg viewBox="0 0 100 150" class="tulip-svg"><use href="#tulip-shape" fill="url(#grad2)"/></svg></div>
+        <div class="tulip-container"><svg viewBox="0 0 100 150" class="tulip-svg"><use href="#tulip-shape" fill="url(#grad3)"/></svg></div>
+    </div>
+
+    <svg style="display: none;">
+        <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ff9a9e;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#fecfef;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#a18cd1;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#fbc2eb;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ffecd2;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#fcb69f;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <symbol id="tulip-shape" viewBox="0 0 100 150">
+            <path d="M50 150 Q 55 100 50 60" stroke="#52796f" stroke-width="4" fill="none"/>
+            <path d="M50 150 Q 20 120 10 90 Q 30 110 50 130" fill="#84a98c"/>
+            <path d="M50 150 Q 80 120 90 90 Q 70 110 50 130" fill="#52796f"/>
+            <path d="M30 60 Q 10 20 50 10 Q 90 20 70 60 Q 50 80 30 60 Z" />
+            <path d="M40 65 Q 20 20 50 15 Q 80 20 60 65 Q 50 80 40 65 Z" fill="rgba(255,255,255,0.3)"/>
+        </symbol>
+    </svg>
+
+    <div class="envelope-wrapper" id="envelope" onclick="openEnvelope()">
+        
+        <div class="envelope-back">
+            <div class="texture"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <div style="font-size: 3rem; margin-top: 10px;">💌</div>
+                <h1>Holaaa Monse</h1>
+                <p>Eres la <span class="highlight">mujer que yo</span> mas amo</p>
+                <p>Encontrar a alguien como tú es más difícil que hallar  <b>netherite o un happy gash o un ajolote</b> en minecraft</p>
+                <p>Te amo con todo mi corazon</p>
+                <p>Te gustaria tener una cita conmigo este 14 de febrero?</p>
+                
+                <div class="btn-group">
+                    <button id="btn-si" class="btn btn-yes" onclick="sayYes(event)">¡SÍ QUIERO!</button>
+                    <button id="btn-no" class="btn btn-no" onclick="tryNo(event)">No</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flap flap-left"></div>
+        <div class="flap flap-right"></div>
+        <div class="flap flap-bottom"></div>
+        
+        <div class="flap flap-top">
+            <div class="wax-seal">♥</div>
+        </div>
+
+    </div>
+
+    <div class="final-overlay" id="final-screen">
+        <h1 class="final-msg">Te amooooo sabia que dirias que si</h1>
+        <p style="font-size: 1.5rem; margin-top: 20px;">Te quiero y te amoo mucho monseeee eres la mujer que hace que mi corazon quiera seguir latiendo, te amo</p>
+    </div>
+
+    <script>
+        // --- LOGICA DE LUCES (BOKEH) ---
+        function createBokeh() {
+            const container = document.getElementById('bokeh-container');
+            for(let i=0; i<20; i++) {
+                const div = document.createElement('div');
+                div.classList.add('light');
+                const size = Math.random() * 50 + 20;
+                div.style.width = `${size}px`;
+                div.style.height = `${size}px`;
+                div.style.left = `${Math.random() * 100}vw`;
+                div.style.animationDuration = `${Math.random() * 5 + 5}s`;
+                div.style.animationDelay = `${Math.random() * 5}s`;
+                container.appendChild(div);
+            }
+        }
+        createBokeh();
+
+        // --- LÓGICA DE LA CARTA ---
+        let isOpen = false;
+        function openEnvelope() {
+            if(isOpen) return;
+            isOpen = true;
+            document.getElementById('envelope').classList.add('open');
+            // Desactivar click en el sobre para que no interfiera
+            document.getElementById('envelope').onclick = null;
+        }
+
+        // --- LÓGICA BOTÓN "NO" (EL ESCAPISTA) ---
+        let noClicks = 0;
+        const btnNo = document.getElementById('btn-no');
+        const btnSi = document.getElementById('btn-si');
+
+        function tryNo(e) {
+            e.stopPropagation(); // Evitar cerrar carta o cosas raras
+            noClicks++;
+            
+            // Fases de persuasión
+            if(noClicks < 3) {
+                // Hacer el botón SI más grande
+                const scale = 1 + (noClicks * 0.5);
+                btnSi.style.transform = `scale(${scale})`;
+                btnSi.style.boxShadow = `0 10px 25px rgba(255, 77, 109, ${0.4 + (noClicks*0.2)})`;
+                
+                // Cambiar texto botón NO
+                const textos = ["¿Segura?", "¡Piénsalo bien!", "¡No me hagas esto!"];
+                btnNo.innerText = textos[noClicks-1] || "No";
+                
+            } else {
+                // FASE FINAL: TELEPORT
+                // Lo sacamos del DOM normal y lo pegamos al body para movimiento libre total
+                if (btnNo.parentNode !== document.body) {
+                    // Guardamos su posición actual para que no salte de golpe visualmente (opcional, pero directo es mejor para caos)
+                    document.body.appendChild(btnNo);
+                    btnNo.style.position = 'fixed';
+                    btnNo.style.zIndex = '9999';
+                }
+                
+                btnNo.innerText = "Atrapame si puedes jajajaja xd";
+                btnNo.style.backgroundColor = "#343a40";
+                btnNo.style.color = "white";
+                moveButton();
+            }
+        }
+
+        function moveButton() {
+            // Calcular área segura (dentro de la ventana menos el tamaño del botón)
+            const w = window.innerWidth - 100;
+            const h = window.innerHeight - 50;
+            
+            const newX = Math.random() * w;
+            const newY = Math.random() * h;
+            
+            // Movimiento instantáneo pero con transición CSS suave definida arriba
+            btnNo.style.transition = "all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)";
+            btnNo.style.left = `${Math.max(20, newX)}px`;
+            btnNo.style.top = `${Math.max(20, newY)}px`;
+        }
+
+        // Detectar si el mouse/dedo se acerca (PC y Móvil)
+        btnNo.addEventListener('mouseenter', () => { if(noClicks >= 3) moveButton(); });
+        btnNo.addEventListener('touchstart', (e) => { 
+            if(noClicks >= 3) {
+                e.preventDefault(); 
+                moveButton(); 
+            }
+        });
+
+        // --- LÓGICA BOTÓN "SÍ" ---
+        function sayYes(e) {
+            e.stopPropagation();
+            // Esconder botón NO
+            btnNo.style.display = 'none';
+            
+            // Pantalla final
+            document.getElementById('final-screen').classList.add('visible');
+            
+            // Celebración (Confetti simple con emojis)
+            setInterval(createHeart, 100);
+        }
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.innerText = ['💖', '🌹', '💑', '✨', '😻'][Math.floor(Math.random()*5)];
+            heart.style.position = 'fixed';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.top = '-50px';
+            heart.style.fontSize = Math.random() * 30 + 20 + 'px';
+            heart.style.zIndex = '10000';
+            heart.style.transition = 'top 3s ease-in, opacity 3s';
+            
+            document.body.appendChild(heart);
+            
+            // Forzar reflow
+            setTimeout(() => {
+                heart.style.top = '110vh';
+                heart.style.opacity = '0';
+            }, 50);
+
+            setTimeout(() => heart.remove(), 3000);
+        }
+
+    </script>
+</body>
+</html>
